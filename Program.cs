@@ -4,27 +4,77 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-
+using System.Windows.Forms;
+// alt +f12 so powerful. lol
+// ctrl-m toggles expand/collapse
 
 namespace NoteTaker
 {
   class Program
   {
 
-    
+    // Note storage
+    // We will use only a local list for now - it will not persist between runs of course
     private static List<Note> notes;
+    private static string s1;
+    private static string s2;
 
     static void Main(string[] args)
     {
 
-      BasicTests();  
-      
+      BasicTests();  // ctrl-dot gives the popup 
+                     //NoteAddTests();
+                     //NoteViewTests();
+                     //// Implement view one note and view all notes but from all notes, you can select one note to view
+                     //// Criteria: Author, Date, Get location from map API so that spelling or autocorrect does not change the correct spelling location. Recognisable format of location.   
+                     //NoteUpdateTests();
+                     ////1.  Display all notes. 2.  Enter Note id (choose 1 note) 3. Format of NoteId integer or guid or string?  4. 
+                     //NoteDeleteTests();
+
       MenuTests();
 
+      //ReadLineWithDefault();
+   
 
-      Console.WriteLine("Press ENTER to end...");  // 
+      //SomeNewFunction(123, "abc");  // press ctrl-dot and just press entertpress F12. yes, didn't know that one!
+
+      Console.WriteLine("Press ENTER to end...");  
       Console.ReadLine();
+      // try view call hierachy ? LOL
+    }
 
+    static string ReadLine(string Default)
+    {
+      // See: https://stackoverflow.com/questions/7565415/edit-text-in-c-sharp-console-application
+      int pos = Console.CursorLeft;
+      Console.Write(Default);
+      ConsoleKeyInfo info;
+      List<char> chars = new List<char>();
+      if (string.IsNullOrEmpty(Default) == false)
+      {
+        chars.AddRange(Default.ToCharArray());
+      }
+
+      while (true)
+      {
+        info = Console.ReadKey(true);
+        if (info.Key == ConsoleKey.Backspace && Console.CursorLeft > pos)
+        {
+          chars.RemoveAt(chars.Count - 1);
+          Console.CursorLeft -= 1;
+          Console.Write(' ');
+          Console.CursorLeft -= 1;
+
+        }
+        else if (info.Key == ConsoleKey.Enter) { Console.Write(Environment.NewLine); break; }
+        //Here you need create own checking of symbols
+        else if (char.IsLetterOrDigit(info.KeyChar) || char.IsPunctuation(info.KeyChar) || char.IsSeparator(info.KeyChar))
+        {
+          Console.Write(info.KeyChar);
+          chars.Add(info.KeyChar);
+        }
+      }
+      return new string(chars.ToArray());
     }
 
     private static void NoteDeleteTests()
@@ -49,7 +99,7 @@ namespace NoteTaker
 
     private static void SomeNewFunction(int v1, string v2)
     {
-     
+      // notice that it has even added the parameters with made-up names!
     }
 
     private static void MenuTests()
@@ -106,12 +156,66 @@ namespace NoteTaker
 
     private static void NoteDelete()
     {
-      throw new NotImplementedException();
+      int id;
+      Console.WriteLine("Enter note id to start");
+      string numStr = Console.ReadLine();
+
+      if (!Int32.TryParse(numStr, out id))
+      {
+        Console.WriteLine("Entry id is not valid. Enter a integer for the id");
+        return;
+      }
+      Note n = notes.Where(x => x.ID == id).FirstOrDefault();
+
+      // if found, do delete
+      if (n != null)
+      {
+        notes.Remove(n);
+      }
+      else
+        Console.WriteLine("Note not found");
+
+      //prompt confirmation of delete note. 
+    
     }
 
     private static void NoteUpdate()
     {
-      throw new NotImplementedException();
+      // get id from user
+      int id;
+      Console.WriteLine("Enter note id to start");
+      string numStr = Console.ReadLine();
+
+      if (!Int32.TryParse(numStr, out id))
+      {
+        Console.WriteLine("Entry id is not valid. Enter a integer for the id");
+        return;
+      }
+
+      // find notes
+      Note n = notes.Where(x => x.ID == id).FirstOrDefault();
+
+      // if found, do edit
+      if (n != null)
+      {
+        SendKeys.SendWait(n.Text);
+        string s = Console.ReadLine();
+        n.Text = s;
+      }
+      else
+        Console.WriteLine("Note not found");
+
+      // save
+    }
+
+    private static void ReadLineWithDefault()
+    {
+      //string s1 = ReadLine("This is some existing text");
+      //Console.WriteLine("Resultant string: " + s1);
+      Console.WriteLine("Edit the following:");
+      SendKeys.SendWait("This is other existing text");
+      string s2 = Console.ReadLine();
+      Console.WriteLine("Resultant string: " + s2);
     }
 
     private static void NoteView(string header, List<Note> lst)
@@ -158,23 +262,34 @@ namespace NoteTaker
 
     private static void BasicTests()
     {
-     
+      // Let's keep all these away from view here and we can just comment in/out the function call
+      // ctrl-dot again
+      // all shoudl now work
       Note n1 = new Note(1, "Hello") { Text = "Hello again - overwrites value passed in constructor" };  // one way to initialise properties
       Note n2 = new Note(2, "world");
-      
+      //Note Authorname = new Note( $ { Authorname: })
+      //what i am trying to do is add a author name 
+      // ok - easier than you think
 
       n2.Authorname = "Caleb"; // done!
-     
+      // how about asking user to input the name 
+      //  Console.ReadLine();
+      //n2.Text = "world";                        // another
       Console.WriteLine($"n2 length is {n2.Length}");
 
       Note n3 = new Note(11, "aaa");
-      Note n4 = new Note(22, "bbb", "James");
+      Note n4 = new Note(22, "bbb", "James"); // notice how we can do either/both - due to that "default parameter"
 
+      // We could decide that a note can not exist without text and insist that text is provided
+      // e.g. by requiring text in the constructor
 
+      //Console.WriteLine(n1);
+      //Console.WriteLine(n2);
 
       List<Note> lst = new List<Note>();
       lst.Add(n1);
-     
+      //lst.Add(n2);
+      //lst.Add(new Note("blah"));
 
       Console.WriteLine($"There {(lst.Count == 1 ? "is" : "are")} {lst.Count} note({(lst.Count == 1 ? "" : "s")})"); // what does this do?
       foreach (var item in lst)
@@ -184,4 +299,3 @@ namespace NoteTaker
     }
   }
 }
-
